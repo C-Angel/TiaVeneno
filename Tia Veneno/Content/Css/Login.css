@@ -1,0 +1,10 @@
+﻿* {
+    box-sizing: border-box !important;
+    margin: 0;
+    padding: 0;
+    font-family: 'Libre Baskerville', serif;
+}
+
+.body {
+    background-image: linear-gradient(to right, #000000, #330f18, #610f22, #900923, #be0b1b);
+}

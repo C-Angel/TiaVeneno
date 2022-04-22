@@ -13,8 +13,8 @@ namespace Tia_Veneno.Controllers
 {
     public class AccesoController : Controller
     {
-        
-        static string cadena = "Server=(local);Database=DB_proyecto;User ID=sa;Password=123456;Integrated Security=False;";
+
+        static string cadena = "Data Source=(local);Initial Catalog=DB_proyecto;User ID=sa;Password=123456;Integrated Security=true;";
 
         // GET: Acceso
         public ActionResult Login()
@@ -71,31 +71,43 @@ namespace Tia_Veneno.Controllers
 
         }
         [HttpPost]
-        public ActionResult Login( Usuario ousuario)
+        public ActionResult Login(Usuario ousuario)
         {
-            ousuario.clave = ConvertirPassword(ousuario.clave);
-            using (SqlConnection cnn = new SqlConnection(cadena))
+
+            try
             {
-                SqlCommand cmd = new SqlCommand("sp_ValidarUsuario", cnn);
-                cmd.Parameters.AddWithValue("@correo", ousuario.correo);
-                cmd.Parameters.AddWithValue("@password", ousuario.clave);
-             
-                cmd.CommandType = CommandType.StoredProcedure;
-                cnn.Open();
-                ousuario.IdUsuario = Convert.ToInt32(cmd.ExecuteScalar().ToString());
+                ousuario.clave = ConvertirPassword(ousuario.clave);
+                using (SqlConnection cnn = new SqlConnection(cadena))
+                {
+                    SqlCommand cmd = new SqlCommand("sp_ValidarUsuario", cnn);
+                    cmd.Parameters.AddWithValue("Correo", ousuario.correo);
+                    cmd.Parameters.AddWithValue("Password", ousuario.clave);
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cnn.Open();
+                    ousuario.IdUsuario = Convert.ToInt32(cmd.ExecuteScalar().ToString());
 
 
+                }
+                if (ousuario.IdUsuario != 0)
+                {
+                    Session["Usuario"] = ousuario;
+                    return RedirectToAction("index", "Home");
+                }
+                else
+                {
+                    ViewData["Mensaje"] = "Usuario no encontrado";
+                    return View();
+                }
             }
-            if (ousuario.IdUsuario != 0)
+            catch (Exception e)
             {
-                Session["usuario"] = ousuario;
-                return RedirectToAction("index", "Home");
+                Console.WriteLine(e.Message);
+                throw;
             }
-            else {
-                ViewData["mensaje"] = "Usuario no encontrado";
-            return View();
-            }
+
         }
+    
 
         public static string ConvertirPassword(string texto)
         {
